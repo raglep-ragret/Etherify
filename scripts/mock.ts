@@ -43,6 +43,22 @@ const mock = async () => {
     randomPerson.address
   );
   console.log(tracksByRandom);
+
+  const trackId = tracksByRandom[0].id;
+
+  console.log(
+    "Likes for track %d: %d",
+    trackId,
+    await etherifyContract.getLikes(trackId)
+  );
+
+  await etherifyContract.likeTrack(trackId);
+
+  console.log(
+    "Likes for track %d: %d",
+    trackId,
+    await etherifyContract.getLikes(trackId)
+  );
 };
 
 const runMock = async () => {

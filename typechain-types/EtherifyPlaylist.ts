@@ -24,23 +24,33 @@ import type {
   OnEvent,
 } from "./common";
 
-export type EtherifyTrackStruct = { addr: string; spotifyLink: string };
-
-export type EtherifyTrackStructOutput = [string, string] & {
+export type EtherifyTrackStruct = {
   addr: string;
+  id: BigNumberish;
+  spotifyLink: string;
+};
+
+export type EtherifyTrackStructOutput = [string, BigNumber, string] & {
+  addr: string;
+  id: BigNumber;
   spotifyLink: string;
 };
 
 export interface EtherifyPlaylistInterface extends ethers.utils.Interface {
   functions: {
     "addTrack(string)": FunctionFragment;
+    "getLikes(uint256)": FunctionFragment;
     "getPlaylist()": FunctionFragment;
     "getTotalTracks()": FunctionFragment;
     "getTracksByAddress(address)": FunctionFragment;
-    "tracksByAddress(address,uint256)": FunctionFragment;
+    "likeTrack(uint256)": FunctionFragment;
   };
 
   encodeFunctionData(functionFragment: "addTrack", values: [string]): string;
+  encodeFunctionData(
+    functionFragment: "getLikes",
+    values: [BigNumberish]
+  ): string;
   encodeFunctionData(
     functionFragment: "getPlaylist",
     values?: undefined
@@ -54,11 +64,12 @@ export interface EtherifyPlaylistInterface extends ethers.utils.Interface {
     values: [string]
   ): string;
   encodeFunctionData(
-    functionFragment: "tracksByAddress",
-    values: [string, BigNumberish]
+    functionFragment: "likeTrack",
+    values: [BigNumberish]
   ): string;
 
   decodeFunctionResult(functionFragment: "addTrack", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "getLikes", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "getPlaylist",
     data: BytesLike
@@ -71,10 +82,7 @@ export interface EtherifyPlaylistInterface extends ethers.utils.Interface {
     functionFragment: "getTracksByAddress",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(
-    functionFragment: "tracksByAddress",
-    data: BytesLike
-  ): Result;
+  decodeFunctionResult(functionFragment: "likeTrack", data: BytesLike): Result;
 
   events: {};
 }
@@ -111,6 +119,11 @@ export interface EtherifyPlaylist extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
+    getLikes(
+      trackId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
+
     getPlaylist(
       overrides?: CallOverrides
     ): Promise<[EtherifyTrackStructOutput[]]>;
@@ -122,17 +135,21 @@ export interface EtherifyPlaylist extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[EtherifyTrackStructOutput[]]>;
 
-    tracksByAddress(
-      arg0: string,
-      arg1: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<[string, string] & { addr: string; spotifyLink: string }>;
+    likeTrack(
+      trackId: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
   };
 
   addTrack(
     trackToAdd: string,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
+
+  getLikes(
+    trackId: BigNumberish,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
 
   getPlaylist(overrides?: CallOverrides): Promise<EtherifyTrackStructOutput[]>;
 
@@ -143,14 +160,18 @@ export interface EtherifyPlaylist extends BaseContract {
     overrides?: CallOverrides
   ): Promise<EtherifyTrackStructOutput[]>;
 
-  tracksByAddress(
-    arg0: string,
-    arg1: BigNumberish,
-    overrides?: CallOverrides
-  ): Promise<[string, string] & { addr: string; spotifyLink: string }>;
+  likeTrack(
+    trackId: BigNumberish,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
 
   callStatic: {
     addTrack(trackToAdd: string, overrides?: CallOverrides): Promise<void>;
+
+    getLikes(
+      trackId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
 
     getPlaylist(
       overrides?: CallOverrides
@@ -163,11 +184,7 @@ export interface EtherifyPlaylist extends BaseContract {
       overrides?: CallOverrides
     ): Promise<EtherifyTrackStructOutput[]>;
 
-    tracksByAddress(
-      arg0: string,
-      arg1: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<[string, string] & { addr: string; spotifyLink: string }>;
+    likeTrack(trackId: BigNumberish, overrides?: CallOverrides): Promise<void>;
   };
 
   filters: {};
@@ -176,6 +193,11 @@ export interface EtherifyPlaylist extends BaseContract {
     addTrack(
       trackToAdd: string,
       overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    getLikes(
+      trackId: BigNumberish,
+      overrides?: CallOverrides
     ): Promise<BigNumber>;
 
     getPlaylist(overrides?: CallOverrides): Promise<BigNumber>;
@@ -187,10 +209,9 @@ export interface EtherifyPlaylist extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    tracksByAddress(
-      arg0: string,
-      arg1: BigNumberish,
-      overrides?: CallOverrides
+    likeTrack(
+      trackId: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
   };
 
@@ -198,6 +219,11 @@ export interface EtherifyPlaylist extends BaseContract {
     addTrack(
       trackToAdd: string,
       overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    getLikes(
+      trackId: BigNumberish,
+      overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     getPlaylist(overrides?: CallOverrides): Promise<PopulatedTransaction>;
@@ -209,10 +235,9 @@ export interface EtherifyPlaylist extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    tracksByAddress(
-      arg0: string,
-      arg1: BigNumberish,
-      overrides?: CallOverrides
+    likeTrack(
+      trackId: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
   };
 }
