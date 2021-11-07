@@ -1,46 +1,122 @@
 import Head from "next/head";
-import React, { useState } from "react";
+import { ethers } from "ethers";
+import React, { useEffect, useState } from "react";
 import DarkModeToggle from "react-dark-mode-toggle";
 
-const TrackInput = () => {
-  return (
-    <div className="bg-white dark:bg-black shadow-lg sm:rounded-lg text-left mt-8">
-      <div className="px-4 py-5 sm:p-6">
-        <h3 className="text-xl leading-6 font-medium text-gray-900 dark:text-gray-50">
-          💽 Add a track!
-        </h3>
+import abi from "../../artifacts/contracts/EtherifyPlaylist.sol/EtherifyPlaylist.json";
+import AddTrackCard from "../components/AddTrackCard";
+import Button from "../components/Button";
 
-        <div className="mt-2 max-w-xl text-sm text-gray-500 dark:text-gray-400">
-          <p>Submit a Spotify link here to add it to the Etherify playlist.</p>
-        </div>
-
-        <form className="mt-5 sm:flex sm:items-center">
-          <div className="w-full md:max-w-md sm:max-w-xs">
-            <label className="sr-only" htmlFor="email">
-              Spotify Link
-            </label>
-            <input
-              className="lg:w-96 sm:w-72 w-full shadow-sm focus:ring-green-500 focus:border-green-500 dark:bg-gray-900 block sm:text-sm border-gray-300 rounded-md"
-              id="email"
-              name="email"
-              placeholder="https://open.spotify.com/track/4CfkxZ4w0qCNuSA0hMJPeH?si=75cb60393f9a4dfc"
-              type="email"
-            />
-          </div>
-          <button
-            className="mt-3 w-full whitespace-nowrap inline-flex items-center justify-center px-4 py-2 border border-transparent shadow-sm font-medium rounded-md text-white bg-green-500 hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
-            type="submit"
-          >
-            Add Track
-          </button>
-        </form>
-      </div>
-    </div>
-  );
-};
+declare global {
+  interface Window {
+    ethereum: any;
+  }
+}
 
 export default function Home() {
   const [isDarkMode, setIsDarkMode] = useState(() => false);
+
+  const contractAddress = "0x2B3b804a9E27C1BA130bDcDc4974B90840a5b8d4";
+  const contractABI = abi.abi;
+
+  const [currentAccount, setCurrentAccount] = useState("");
+  const [isPendingTrx, setIsPendingTrx] = useState(false);
+
+  const checkIfWalletIsConnected = async () => {
+    try {
+      const { ethereum } = window;
+
+      if (!ethereum) {
+        console.log("Make sure you have metamask!");
+        return;
+      } else {
+        console.log("Ethereum object loaded: ", ethereum);
+      }
+
+      const accounts = await ethereum.request({ method: "eth_accounts" });
+
+      if (accounts.length !== 0) {
+        const account = accounts[0];
+        console.log("Has authorized account: ", account);
+        setCurrentAccount(account);
+      } else {
+        console.log("No authorized account found");
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const connectWallet = async () => {
+    try {
+      const { ethereum } = window;
+
+      if (!ethereum) {
+        alert("Get MetaMask!");
+        return;
+      }
+
+      const accounts = await ethereum.request({
+        method: "eth_requestAccounts",
+      });
+
+      console.log("Connected to wallet: ", accounts[0]);
+      setCurrentAccount(accounts[0]);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    checkIfWalletIsConnected();
+  }, []);
+
+  const addTrack = async (spotifyLink: string) => {
+    try {
+      if (!spotifyLink || spotifyLink.length === 0) {
+        console.log("Invalid Spotify link!");
+      } else {
+        const { ethereum } = window;
+
+        if (ethereum) {
+          const provider = new ethers.providers.Web3Provider(ethereum);
+          const signer = provider.getSigner();
+
+          /*
+           * You're using contractABI here
+           */
+          const wavePortalContract = new ethers.Contract(
+            contractAddress,
+            contractABI,
+            signer
+          );
+
+          let count = await wavePortalContract.getTotalTracks();
+          console.log("Retrieved total track count: ", count.toNumber());
+
+          /*
+           * Execute the actual wave from your smart contract
+           */
+          const waveTxn = await wavePortalContract.addTrack(
+            "https://open.spotify.com/track/4CfkxZ4w0qCNuSA0hMJPeH?si=75cb60393f9a4dfc"
+          );
+          console.log("Now mining...", waveTxn.hash);
+          setIsPendingTrx(true);
+
+          await waveTxn.wait();
+          console.log("Mined!", waveTxn.hash);
+
+          count = await wavePortalContract.getTotalTracks();
+          console.log("Retrieved total track count: ", count.toNumber());
+          setIsPendingTrx(false);
+        } else {
+          console.log("Ethereum object doesn't exist!");
+        }
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   return (
     <div className={`${isDarkMode && "dark"}`}>
@@ -80,7 +156,11 @@ export default function Home() {
             .
           </p>
 
-          <TrackInput />
+          {!currentAccount && (
+            <Button text="Connect Wallet" onClick={connectWallet} />
+          )}
+
+          <AddTrackCard isPendingTrx={isPendingTrx} onSubmit={addTrack} />
         </main>
 
         {/*
