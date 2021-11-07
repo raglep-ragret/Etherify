@@ -1,8 +1,5 @@
 import hre from "hardhat";
-import {
-  EtherifyPlaylist,
-  EtherifyPlaylist__factory,
-} from "../typechain-types";
+import { EtherifyPlaylist__factory } from "../typechain-types";
 
 const mock = async () => {
   const [owner, randomPerson] = await hre.ethers.getSigners();
