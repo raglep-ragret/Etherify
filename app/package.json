@@ -8,6 +8,7 @@
   "dependencies": {
     "@heroicons/react": "^1.0.5",
     "@reduxjs/toolkit": "^1.6.2",
+    "ethers": "^5.5.1",
     "next": "latest",
     "next-themes": "^0.0.15",
     "prop-types": "^15.7.2",
