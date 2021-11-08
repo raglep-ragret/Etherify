@@ -2,6 +2,7 @@ import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { ethers } from "ethers";
 import { EtherifyPlaylist } from "../../../typechain-types";
 import { TTrack } from "../../types";
+import { maybeGetSpotifyUri } from "../../utils/spotify";
 import { throwError } from "../../utils/utils";
 import type { RootState } from "../store";
 
@@ -49,25 +50,29 @@ export const getPlaylist = createAsyncThunk(
 export const addTrack = createAsyncThunk(
   "playlist/addTrack",
   async (spotifyLink: string, { dispatch, getState }) => {
-    if (!spotifyLink || spotifyLink.length === 0) {
-      throwError("Invalid Spotify link!");
+    const spotifyUri = maybeGetSpotifyUri(spotifyLink);
+
+    if (!spotifyUri) {
+      throwError("Invalid spotify URI!");
+    } else {
+      const etherifyContract = maybeGetEthereumContract(
+        getState() as RootState
+      );
+
+      let count = await etherifyContract.getTotalTracks();
+      console.log("Retrieved total track count: ", count.toNumber());
+
+      const waveTxn = await etherifyContract.addTrack(spotifyUri);
+
+      console.log("Now mining...", waveTxn.hash);
+      await waveTxn.wait();
+      console.log("Mined!", waveTxn.hash);
+
+      count = await etherifyContract.getTotalTracks();
+      console.log("Retrieved total track count: ", count.toNumber());
+
+      dispatch(getPlaylist()); // Update the playlist to include the new track.
     }
-
-    const etherifyContract = maybeGetEthereumContract(getState() as RootState);
-
-    let count = await etherifyContract.getTotalTracks();
-    console.log("Retrieved total track count: ", count.toNumber());
-
-    const waveTxn = await etherifyContract.addTrack(spotifyLink);
-
-    console.log("Now mining...", waveTxn.hash);
-    await waveTxn.wait();
-    console.log("Mined!", waveTxn.hash);
-
-    count = await etherifyContract.getTotalTracks();
-    console.log("Retrieved total track count: ", count.toNumber());
-
-    dispatch(getPlaylist()); // Update the playlist to include the new track.
   }
 );
 
