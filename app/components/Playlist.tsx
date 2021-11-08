@@ -1,11 +1,11 @@
-import { HeartIcon } from "@heroicons/react/outline";
-import { RefreshIcon } from "@heroicons/react/solid";
 import React, { useEffect } from "react";
-import SpotifyPlayer from "react-spotify-player";
 import { useAppDispatch, useAppSelector } from "../redux/hooks";
-import { getPlaylist, selectPlaylist } from "../redux/slices/playlistSlice";
-import { truncateEthereumAddress } from "../utils/ethereum";
-import { maybeGetSpotifyUri } from "../utils/spotify";
+import {
+  getAllLikes,
+  getMyLikes,
+  getPlaylist,
+  selectPlaylist,
+} from "../redux/slices/playlistSlice";
 import PlaylistTrack from "./PlaylistTrack";
 
 const Playlist = () => {
@@ -14,10 +14,19 @@ const Playlist = () => {
   const playlist = useAppSelector(selectPlaylist);
 
   const loadPlaylist = () => dispatch(getPlaylist());
+  const loadLikes = () => dispatch(getAllLikes());
+  const loadMyLikes = () => dispatch(getMyLikes());
 
   useEffect(() => {
     loadPlaylist();
   }, []);
+
+  useEffect(() => {
+    if (playlist) {
+      loadLikes();
+      loadMyLikes();
+    }
+  }, [playlist]);
 
   return (
     <>
@@ -26,7 +35,7 @@ const Playlist = () => {
       {playlist && playlist.length > 0 && (
         <ol>
           {playlist.map((track) => (
-            <PlaylistTrack track={track} />
+            <PlaylistTrack key={track.id} track={track} />
           ))}
         </ol>
       )}
