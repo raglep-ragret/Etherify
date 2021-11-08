@@ -1,9 +1,11 @@
 import { Action, configureStore, ThunkAction } from "@reduxjs/toolkit";
-import { authReducer } from "./slices/authSlice";
+import { playlistReducer } from "./slices/playlistSlice";
+import { web3Reducer } from "./slices/web3Slice";
 
 export const store = configureStore({
   reducer: {
-    auth: authReducer,
+    playlist: playlistReducer,
+    web3: web3Reducer,
   },
 });
 

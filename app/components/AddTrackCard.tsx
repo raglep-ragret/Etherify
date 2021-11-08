@@ -1,14 +1,16 @@
 import { useState } from "react";
+import { useAppDispatch, useAppSelector } from "../redux/hooks";
+import { addTrack, selectIsAddingTrack } from "../redux/slices/playlistSlice";
 import Button from "./Button";
 
-const AddTrackCard = ({
-  isPendingTrx,
-  onSubmit,
-}: {
-  isPendingTrx: boolean;
-  onSubmit: (spotifyLink: string) => void;
-}) => {
+const AddTrackCard = () => {
   const [spotifyLink, setSpotifyLink] = useState("");
+
+  const dispatch = useAppDispatch();
+
+  const isAddingTrack = useAppSelector(selectIsAddingTrack);
+
+  const addSpotifyTrack = () => dispatch(addTrack(spotifyLink));
 
   return (
     <div className="bg-white dark:bg-black shadow-lg sm:rounded-lg text-left mt-8">
@@ -37,9 +39,9 @@ const AddTrackCard = ({
             />
           </div>
           <Button
-            loading={isPendingTrx}
+            loading={isAddingTrack}
             text="Add Track"
-            onClick={() => onSubmit(spotifyLink)}
+            onClick={addSpotifyTrack}
           />
         </div>
       </div>

@@ -2,179 +2,36 @@ import Head from "next/head";
 import { ethers } from "ethers";
 import React, { useEffect, useState } from "react";
 import DarkModeToggle from "react-dark-mode-toggle";
-
-import abi from "../../artifacts/contracts/EtherifyPlaylist.sol/EtherifyPlaylist.json";
 import AddTrackCard from "../components/AddTrackCard";
 import Button from "../components/Button";
-import { EtherifyPlaylist } from "../../typechain-types";
 import { useAppDispatch, useAppSelector } from "../redux/hooks";
-import { authorize, selectAuthorizedWallet } from "../redux/slices/authSlice";
-
-declare global {
-  interface Window {
-    ethereum: any;
-  }
-}
-
-type TPlaylist = {
-  address: string;
-  id: number;
-  spotifyLink: string;
-};
+import {
+  connectWallet,
+  selectAuthorizedWallet,
+  selectContractAbi,
+  selectContractAddress,
+} from "../redux/slices/web3Slice";
+import { TTrack } from "../types";
+import {
+  getPlaylist,
+  selectIsLoadingPlaylist,
+  selectPlaylist,
+} from "../redux/slices/playlistSlice";
 
 export default function Home() {
   const [isDarkMode, setIsDarkMode] = useState(() => false);
 
-  const contractAddress = "0x2B3b804a9E27C1BA130bDcDc4974B90840a5b8d4";
-  const contractABI = abi.abi;
-
   const dispatch = useAppDispatch();
   const maybeAuthorizedWallet = useAppSelector(selectAuthorizedWallet);
+  const playlist = useAppSelector(selectPlaylist);
 
-  const [isPendingTrx, setIsPendingTrx] = useState(false);
-  const [playlist, setPlaylist] = useState<TPlaylist[]>([]);
-
-  const getPlaylist = async () => {
-    try {
-      const { ethereum } = window;
-      if (ethereum) {
-        const provider = new ethers.providers.Web3Provider(ethereum);
-        const signer = provider.getSigner();
-        const wavePortalContract = new ethers.Contract(
-          contractAddress,
-          contractABI,
-          signer
-        ) as EtherifyPlaylist;
-
-        /*
-         * Call the getAllWaves method from your Smart Contract
-         */
-        const playlistRaw = await wavePortalContract.getPlaylist();
-
-        /*
-         * We only need address, timestamp, and message in our UI so let's
-         * pick those out
-         */
-        let playlistCleaned: TPlaylist[] = [];
-        playlistRaw.forEach((track) => {
-          playlistCleaned.push({
-            address: track.addr,
-            id: track.id.toNumber(),
-            spotifyLink: track.spotifyLink,
-          });
-        });
-
-        console.log("Playlist:", playlistCleaned);
-
-        /*
-         * Store our data in React State
-         */
-        setPlaylist(playlistCleaned);
-      } else {
-        console.log("Ethereum object doesn't exist!");
-      }
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  const checkIfWalletIsConnected = async () => {
-    try {
-      const { ethereum } = window;
-
-      if (!ethereum) {
-        console.log("Make sure you have Metamask!");
-        return;
-      } else {
-        console.log("Ethereum object loaded: ", ethereum);
-      }
-
-      const accounts = await ethereum.request({ method: "eth_accounts" });
-
-      if (accounts.length !== 0) {
-        const account = accounts[0];
-        console.log("Has authorized account: ", account);
-        dispatch(authorize(account));
-
-        await getPlaylist();
-      } else {
-        console.log("No authorized account found");
-      }
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  const connectWallet = async () => {
-    try {
-      const { ethereum } = window;
-
-      if (!ethereum) {
-        alert("Get MetaMask!");
-        return;
-      }
-
-      const accounts = await ethereum.request({
-        method: "eth_requestAccounts",
-      });
-
-      console.log("Connected to wallet: ", accounts[0]);
-      dispatch(authorize(accounts[0]));
-    } catch (error) {
-      console.log(error);
-    }
-  };
+  const authorize = () => dispatch(connectWallet());
+  const loadPlaylist = () => dispatch(getPlaylist());
 
   useEffect(() => {
-    checkIfWalletIsConnected();
+    authorize();
+    loadPlaylist();
   }, []);
-
-  const addTrack = async (spotifyLink: string) => {
-    try {
-      if (!spotifyLink || spotifyLink.length === 0) {
-        console.log("Invalid Spotify link!");
-      } else {
-        const { ethereum } = window;
-
-        if (ethereum) {
-          const provider = new ethers.providers.Web3Provider(ethereum);
-          const signer = provider.getSigner();
-
-          /*
-           * You're using contractABI here
-           */
-          const wavePortalContract = new ethers.Contract(
-            contractAddress,
-            contractABI,
-            signer
-          );
-
-          let count = await wavePortalContract.getTotalTracks();
-          console.log("Retrieved total track count: ", count.toNumber());
-
-          /*
-           * Execute the actual wave from your smart contract
-           */
-          const waveTxn = await wavePortalContract.addTrack(
-            "https://open.spotify.com/track/4CfkxZ4w0qCNuSA0hMJPeH?si=75cb60393f9a4dfc"
-          );
-          console.log("Now mining...", waveTxn.hash);
-          setIsPendingTrx(true);
-
-          await waveTxn.wait();
-          console.log("Mined!", waveTxn.hash);
-
-          count = await wavePortalContract.getTotalTracks();
-          console.log("Retrieved total track count: ", count.toNumber());
-          setIsPendingTrx(false);
-        } else {
-          console.log("Ethereum object doesn't exist!");
-        }
-      }
-    } catch (error) {
-      console.log(error);
-    }
-  };
 
   return (
     <div className={`${isDarkMode && "dark"}`}>
@@ -215,12 +72,12 @@ export default function Home() {
           </p>
 
           {!maybeAuthorizedWallet && (
-            <Button text="Connect Wallet" onClick={connectWallet} />
+            <Button text="Connect Wallet" onClick={authorize} />
           )}
 
-          <AddTrackCard isPendingTrx={isPendingTrx} onSubmit={addTrack} />
+          <AddTrackCard />
 
-          {playlist && (
+          {playlist && playlist.length > 0 && (
             <ol>
               {playlist.map((track) => (
                 <li key={track.id}>{track.spotifyLink}</li>
