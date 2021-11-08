@@ -34,9 +34,12 @@ const Playlist = () => {
 
       {playlist && playlist.length > 0 && (
         <ol>
-          {playlist.map((track) => (
-            <PlaylistTrack key={track.id} track={track} />
-          ))}
+          {playlist
+            .slice()
+            .reverse()
+            .map((track) => (
+              <PlaylistTrack key={track.id} track={track} />
+            ))}
         </ol>
       )}
     </>
