@@ -6,6 +6,9 @@ import DarkModeToggle from "react-dark-mode-toggle";
 import abi from "../../artifacts/contracts/EtherifyPlaylist.sol/EtherifyPlaylist.json";
 import AddTrackCard from "../components/AddTrackCard";
 import Button from "../components/Button";
+import { EtherifyPlaylist } from "../../typechain-types";
+import { useAppDispatch, useAppSelector } from "../redux/hooks";
+import { authorize, selectAuthorizedWallet } from "../redux/slices/authSlice";
 
 declare global {
   interface Window {
@@ -13,21 +16,74 @@ declare global {
   }
 }
 
+type TPlaylist = {
+  address: string;
+  id: number;
+  spotifyLink: string;
+};
+
 export default function Home() {
   const [isDarkMode, setIsDarkMode] = useState(() => false);
 
   const contractAddress = "0x2B3b804a9E27C1BA130bDcDc4974B90840a5b8d4";
   const contractABI = abi.abi;
 
-  const [currentAccount, setCurrentAccount] = useState("");
+  const dispatch = useAppDispatch();
+  const maybeAuthorizedWallet = useAppSelector(selectAuthorizedWallet);
+
   const [isPendingTrx, setIsPendingTrx] = useState(false);
+  const [playlist, setPlaylist] = useState<TPlaylist[]>([]);
+
+  const getPlaylist = async () => {
+    try {
+      const { ethereum } = window;
+      if (ethereum) {
+        const provider = new ethers.providers.Web3Provider(ethereum);
+        const signer = provider.getSigner();
+        const wavePortalContract = new ethers.Contract(
+          contractAddress,
+          contractABI,
+          signer
+        ) as EtherifyPlaylist;
+
+        /*
+         * Call the getAllWaves method from your Smart Contract
+         */
+        const playlistRaw = await wavePortalContract.getPlaylist();
+
+        /*
+         * We only need address, timestamp, and message in our UI so let's
+         * pick those out
+         */
+        let playlistCleaned: TPlaylist[] = [];
+        playlistRaw.forEach((track) => {
+          playlistCleaned.push({
+            address: track.addr,
+            id: track.id.toNumber(),
+            spotifyLink: track.spotifyLink,
+          });
+        });
+
+        console.log("Playlist:", playlistCleaned);
+
+        /*
+         * Store our data in React State
+         */
+        setPlaylist(playlistCleaned);
+      } else {
+        console.log("Ethereum object doesn't exist!");
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   const checkIfWalletIsConnected = async () => {
     try {
       const { ethereum } = window;
 
       if (!ethereum) {
-        console.log("Make sure you have metamask!");
+        console.log("Make sure you have Metamask!");
         return;
       } else {
         console.log("Ethereum object loaded: ", ethereum);
@@ -38,7 +94,9 @@ export default function Home() {
       if (accounts.length !== 0) {
         const account = accounts[0];
         console.log("Has authorized account: ", account);
-        setCurrentAccount(account);
+        dispatch(authorize(account));
+
+        await getPlaylist();
       } else {
         console.log("No authorized account found");
       }
@@ -61,7 +119,7 @@ export default function Home() {
       });
 
       console.log("Connected to wallet: ", accounts[0]);
-      setCurrentAccount(accounts[0]);
+      dispatch(authorize(accounts[0]));
     } catch (error) {
       console.log(error);
     }
@@ -156,11 +214,19 @@ export default function Home() {
             .
           </p>
 
-          {!currentAccount && (
+          {!maybeAuthorizedWallet && (
             <Button text="Connect Wallet" onClick={connectWallet} />
           )}
 
           <AddTrackCard isPendingTrx={isPendingTrx} onSubmit={addTrack} />
+
+          {playlist && (
+            <ol>
+              {playlist.map((track) => (
+                <li key={track.id}>{track.spotifyLink}</li>
+              ))}
+            </ol>
+          )}
         </main>
 
         {/*
