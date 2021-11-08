@@ -3,30 +3,24 @@ import React, { useEffect, useState } from "react";
 import DarkModeToggle from "react-dark-mode-toggle";
 import AddTrackCard from "../components/AddTrackCard";
 import Button from "../components/Button";
+import Playlist from "../components/Playlist";
 import { useAppDispatch, useAppSelector } from "../redux/hooks";
 import {
   connectWallet,
   selectAuthorizedWallet,
 } from "../redux/slices/web3Slice";
-import { getPlaylist, selectPlaylist } from "../redux/slices/playlistSlice";
-import SpotifyPlayer from "react-spotify-player";
-import { maybeGetSpotifyUri } from "../utils/spotify";
-import { truncateEthereumAddress } from "../utils/ethereum";
-import { HeartIcon } from "@heroicons/react/outline";
 
 export default function Home() {
   const [isDarkMode, setIsDarkMode] = useState(() => false);
 
   const dispatch = useAppDispatch();
+
   const maybeAuthorizedWallet = useAppSelector(selectAuthorizedWallet);
-  const playlist = useAppSelector(selectPlaylist);
 
   const authorize = () => dispatch(connectWallet());
-  const loadPlaylist = () => dispatch(getPlaylist());
 
   useEffect(() => {
     authorize();
-    loadPlaylist();
   }, []);
 
   return (
@@ -73,35 +67,7 @@ export default function Home() {
 
           <AddTrackCard />
 
-          <h2 className="mt-6 mb-4 text-2xl font-bold">Playlist</h2>
-
-          {playlist && playlist.length > 0 && (
-            <ol>
-              {playlist.map((track) => (
-                /* TODO: Make this responsive */
-                <li
-                  className="flex flex-row justify-between items-center gap-6 mb-3"
-                  key={track.id}
-                >
-                  <a href="#">{truncateEthereumAddress(track.address)}</a>
-                  <SpotifyPlayer
-                    size={{
-                      width: 360,
-                      height: 80,
-                    }}
-                    uri={maybeGetSpotifyUri(track.spotifyLink)}
-                  />
-                  <span className="flex flex-row items-center">
-                    <HeartIcon
-                      aria-hidden={true}
-                      className="h-4 w-4 -ml-0.5 mr-2"
-                    />
-                    0
-                  </span>
-                </li>
-              ))}
-            </ol>
-          )}
+          <Playlist />
         </main>
 
         {/*
