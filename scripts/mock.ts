@@ -46,15 +46,29 @@ const mock = async () => {
   console.log(
     "Likes for track %d: %d",
     trackId,
-    await etherifyContract.getLikes(trackId)
+    await etherifyContract.getLikesForTrack(trackId)
   );
 
   await etherifyContract.likeTrack(trackId);
-
   console.log(
     "Likes for track %d: %d",
     trackId,
-    await etherifyContract.getLikes(trackId)
+    await etherifyContract.getLikesForTrack(trackId)
+  );
+  console.log(
+    "Do I like track?:",
+    await etherifyContract.doILikeTrack(trackId)
+  );
+
+  await etherifyContract.unlikeTrack(trackId);
+  console.log(
+    "Likes for track %d: %d",
+    trackId,
+    await etherifyContract.getLikesForTrack(trackId)
+  );
+  console.log(
+    "Do I like track?:",
+    await etherifyContract.doILikeTrack(trackId)
   );
 };
 

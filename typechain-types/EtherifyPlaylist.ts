@@ -28,28 +28,46 @@ export type EtherifyTrackStruct = {
   addr: string;
   id: BigNumberish;
   spotifyLink: string;
+  timestamp: BigNumberish;
 };
 
-export type EtherifyTrackStructOutput = [string, BigNumber, string] & {
-  addr: string;
-  id: BigNumber;
-  spotifyLink: string;
-};
+export type EtherifyTrackStructOutput = [
+  string,
+  BigNumber,
+  string,
+  BigNumber
+] & { addr: string; id: BigNumber; spotifyLink: string; timestamp: BigNumber };
 
 export interface EtherifyPlaylistInterface extends ethers.utils.Interface {
   functions: {
     "addTrack(string)": FunctionFragment;
-    "getLikes(uint256)": FunctionFragment;
+    "doILikeTrack(uint256)": FunctionFragment;
+    "doesUserLikeTrack(address,uint256)": FunctionFragment;
+    "getLikesForTrack(uint256)": FunctionFragment;
+    "getMyTracks()": FunctionFragment;
     "getPlaylist()": FunctionFragment;
     "getTotalTracks()": FunctionFragment;
     "getTracksByAddress(address)": FunctionFragment;
     "likeTrack(uint256)": FunctionFragment;
+    "unlikeTrack(uint256)": FunctionFragment;
   };
 
   encodeFunctionData(functionFragment: "addTrack", values: [string]): string;
   encodeFunctionData(
-    functionFragment: "getLikes",
+    functionFragment: "doILikeTrack",
     values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "doesUserLikeTrack",
+    values: [string, BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getLikesForTrack",
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getMyTracks",
+    values?: undefined
   ): string;
   encodeFunctionData(
     functionFragment: "getPlaylist",
@@ -67,9 +85,28 @@ export interface EtherifyPlaylistInterface extends ethers.utils.Interface {
     functionFragment: "likeTrack",
     values: [BigNumberish]
   ): string;
+  encodeFunctionData(
+    functionFragment: "unlikeTrack",
+    values: [BigNumberish]
+  ): string;
 
   decodeFunctionResult(functionFragment: "addTrack", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "getLikes", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "doILikeTrack",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "doesUserLikeTrack",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getLikesForTrack",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getMyTracks",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "getPlaylist",
     data: BytesLike
@@ -83,9 +120,42 @@ export interface EtherifyPlaylistInterface extends ethers.utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "likeTrack", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "unlikeTrack",
+    data: BytesLike
+  ): Result;
 
-  events: {};
+  events: {
+    "LikedTrack(address,uint256,uint256)": EventFragment;
+    "TrackAdded(address,uint256,string,uint256)": EventFragment;
+    "UnlikedTrack(address,uint256,uint256)": EventFragment;
+  };
+
+  getEvent(nameOrSignatureOrTopic: "LikedTrack"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "TrackAdded"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "UnlikedTrack"): EventFragment;
 }
+
+export type LikedTrackEvent = TypedEvent<
+  [string, BigNumber, BigNumber],
+  { addr: string; id: BigNumber; timestamp: BigNumber }
+>;
+
+export type LikedTrackEventFilter = TypedEventFilter<LikedTrackEvent>;
+
+export type TrackAddedEvent = TypedEvent<
+  [string, BigNumber, string, BigNumber],
+  { addr: string; id: BigNumber; spotifyUri: string; timestamp: BigNumber }
+>;
+
+export type TrackAddedEventFilter = TypedEventFilter<TrackAddedEvent>;
+
+export type UnlikedTrackEvent = TypedEvent<
+  [string, BigNumber, BigNumber],
+  { addr: string; id: BigNumber; timestamp: BigNumber }
+>;
+
+export type UnlikedTrackEventFilter = TypedEventFilter<UnlikedTrackEvent>;
 
 export interface EtherifyPlaylist extends BaseContract {
   connect(signerOrProvider: Signer | Provider | string): this;
@@ -115,14 +185,29 @@ export interface EtherifyPlaylist extends BaseContract {
 
   functions: {
     addTrack(
-      trackToAdd: string,
+      _spotifyUri: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
-    getLikes(
-      trackId: BigNumberish,
+    doILikeTrack(
+      _trackId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[boolean]>;
+
+    doesUserLikeTrack(
+      _addr: string,
+      _trackId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[boolean]>;
+
+    getLikesForTrack(
+      _trackId: BigNumberish,
       overrides?: CallOverrides
     ): Promise<[BigNumber]>;
+
+    getMyTracks(
+      overrides?: CallOverrides
+    ): Promise<[EtherifyTrackStructOutput[]]>;
 
     getPlaylist(
       overrides?: CallOverrides
@@ -131,47 +216,85 @@ export interface EtherifyPlaylist extends BaseContract {
     getTotalTracks(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     getTracksByAddress(
-      addr: string,
+      _addr: string,
       overrides?: CallOverrides
     ): Promise<[EtherifyTrackStructOutput[]]>;
 
     likeTrack(
-      trackId: BigNumberish,
+      _trackId: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    unlikeTrack(
+      _trackId: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
   };
 
   addTrack(
-    trackToAdd: string,
+    _spotifyUri: string,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  getLikes(
-    trackId: BigNumberish,
+  doILikeTrack(
+    _trackId: BigNumberish,
+    overrides?: CallOverrides
+  ): Promise<boolean>;
+
+  doesUserLikeTrack(
+    _addr: string,
+    _trackId: BigNumberish,
+    overrides?: CallOverrides
+  ): Promise<boolean>;
+
+  getLikesForTrack(
+    _trackId: BigNumberish,
     overrides?: CallOverrides
   ): Promise<BigNumber>;
+
+  getMyTracks(overrides?: CallOverrides): Promise<EtherifyTrackStructOutput[]>;
 
   getPlaylist(overrides?: CallOverrides): Promise<EtherifyTrackStructOutput[]>;
 
   getTotalTracks(overrides?: CallOverrides): Promise<BigNumber>;
 
   getTracksByAddress(
-    addr: string,
+    _addr: string,
     overrides?: CallOverrides
   ): Promise<EtherifyTrackStructOutput[]>;
 
   likeTrack(
-    trackId: BigNumberish,
+    _trackId: BigNumberish,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  unlikeTrack(
+    _trackId: BigNumberish,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
   callStatic: {
-    addTrack(trackToAdd: string, overrides?: CallOverrides): Promise<void>;
+    addTrack(_spotifyUri: string, overrides?: CallOverrides): Promise<void>;
 
-    getLikes(
-      trackId: BigNumberish,
+    doILikeTrack(
+      _trackId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<boolean>;
+
+    doesUserLikeTrack(
+      _addr: string,
+      _trackId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<boolean>;
+
+    getLikesForTrack(
+      _trackId: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
+
+    getMyTracks(
+      overrides?: CallOverrides
+    ): Promise<EtherifyTrackStructOutput[]>;
 
     getPlaylist(
       overrides?: CallOverrides
@@ -180,63 +303,139 @@ export interface EtherifyPlaylist extends BaseContract {
     getTotalTracks(overrides?: CallOverrides): Promise<BigNumber>;
 
     getTracksByAddress(
-      addr: string,
+      _addr: string,
       overrides?: CallOverrides
     ): Promise<EtherifyTrackStructOutput[]>;
 
-    likeTrack(trackId: BigNumberish, overrides?: CallOverrides): Promise<void>;
+    likeTrack(_trackId: BigNumberish, overrides?: CallOverrides): Promise<void>;
+
+    unlikeTrack(
+      _trackId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
   };
 
-  filters: {};
+  filters: {
+    "LikedTrack(address,uint256,uint256)"(
+      addr?: string | null,
+      id?: null,
+      timestamp?: null
+    ): LikedTrackEventFilter;
+    LikedTrack(
+      addr?: string | null,
+      id?: null,
+      timestamp?: null
+    ): LikedTrackEventFilter;
+
+    "TrackAdded(address,uint256,string,uint256)"(
+      addr?: string | null,
+      id?: null,
+      spotifyUri?: null,
+      timestamp?: null
+    ): TrackAddedEventFilter;
+    TrackAdded(
+      addr?: string | null,
+      id?: null,
+      spotifyUri?: null,
+      timestamp?: null
+    ): TrackAddedEventFilter;
+
+    "UnlikedTrack(address,uint256,uint256)"(
+      addr?: string | null,
+      id?: null,
+      timestamp?: null
+    ): UnlikedTrackEventFilter;
+    UnlikedTrack(
+      addr?: string | null,
+      id?: null,
+      timestamp?: null
+    ): UnlikedTrackEventFilter;
+  };
 
   estimateGas: {
     addTrack(
-      trackToAdd: string,
+      _spotifyUri: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
-    getLikes(
-      trackId: BigNumberish,
+    doILikeTrack(
+      _trackId: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
+
+    doesUserLikeTrack(
+      _addr: string,
+      _trackId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    getLikesForTrack(
+      _trackId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    getMyTracks(overrides?: CallOverrides): Promise<BigNumber>;
 
     getPlaylist(overrides?: CallOverrides): Promise<BigNumber>;
 
     getTotalTracks(overrides?: CallOverrides): Promise<BigNumber>;
 
     getTracksByAddress(
-      addr: string,
+      _addr: string,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
     likeTrack(
-      trackId: BigNumberish,
+      _trackId: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    unlikeTrack(
+      _trackId: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
   };
 
   populateTransaction: {
     addTrack(
-      trackToAdd: string,
+      _spotifyUri: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
-    getLikes(
-      trackId: BigNumberish,
+    doILikeTrack(
+      _trackId: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
+
+    doesUserLikeTrack(
+      _addr: string,
+      _trackId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    getLikesForTrack(
+      _trackId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    getMyTracks(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     getPlaylist(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     getTotalTracks(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     getTracksByAddress(
-      addr: string,
+      _addr: string,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     likeTrack(
-      trackId: BigNumberish,
+      _trackId: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    unlikeTrack(
+      _trackId: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
   };
