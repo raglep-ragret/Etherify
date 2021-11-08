@@ -16,7 +16,7 @@ const maybeGetEthereumContract = (state: RootState) => {
       state.web3.etherifyContractAddress,
       state.web3.etherifyContractAbi,
       signer
-    ) as EtherifyPlaylist;
+    ) as unknown as EtherifyPlaylist;
     return etherifyContract;
   }
 
