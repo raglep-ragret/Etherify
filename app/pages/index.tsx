@@ -8,6 +8,7 @@ import Playlist from "../components/Playlist";
 import { useAppDispatch, useAppSelector } from "../redux/hooks";
 import {
   connectWallet,
+  isWalletConnected,
   selectAuthorizedWallet,
 } from "../redux/slices/web3Slice";
 
@@ -22,11 +23,12 @@ export default function Home() {
 
   const maybeAuthorizedWallet = useAppSelector(selectAuthorizedWallet);
 
-  const authorize = () => dispatch(connectWallet());
+  const checkIfConnected = () => dispatch(isWalletConnected());
+  const doConnectWallet = () => dispatch(connectWallet());
 
   useEffect(() => {
     setMounted(true);
-    authorize();
+    checkIfConnected();
   }, []);
 
   return (
@@ -85,7 +87,7 @@ export default function Home() {
         </p>
 
         {!maybeAuthorizedWallet && (
-          <Button text="Connect Wallet" onClick={authorize} />
+          <Button text="Connect Wallet" onClick={doConnectWallet} />
         )}
 
         <AddTrackCard />
