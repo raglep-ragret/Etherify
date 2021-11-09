@@ -11,7 +11,11 @@ const deployWithHardhatAccount = async () => {
   const etherifyContractFactory = (await hre.ethers.getContractFactory(
     "EtherifyPlaylist"
   )) as EtherifyPlaylist__factory;
-  const etherifyContract = await etherifyContractFactory.deploy();
+  const etherifyContract = await etherifyContractFactory.deploy({
+    // TS types wrong here- overriding
+    // @ts-ignore
+    value: hre.ethers.utils.parseEther("0.05"),
+  });
   await etherifyContract.deployed();
 
   console.log("");

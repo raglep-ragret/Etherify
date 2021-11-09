@@ -6,12 +6,24 @@ const mock = async () => {
   const etherifyContractFactory = (await hre.ethers.getContractFactory(
     "EtherifyPlaylist"
   )) as EtherifyPlaylist__factory;
-  const etherifyContract = await etherifyContractFactory.deploy();
+  const etherifyContract = await etherifyContractFactory.deploy({
+    // TS types wrong here- overriding
+    // @ts-ignore
+    value: hre.ethers.utils.parseEther("0.1"),
+  });
   await etherifyContract.deployed();
+
+  const initialContractBalance = await hre.ethers.provider.getBalance(
+    etherifyContract.address
+  );
 
   console.log("");
   console.log("Contract deployed to:", etherifyContract.address);
   console.log("Contract deployed by:", owner.address);
+  console.log(
+    "Initial balance:",
+    hre.ethers.utils.formatEther(initialContractBalance)
+  );
   console.log("");
 
   let etherifyCount;
@@ -33,13 +45,20 @@ const mock = async () => {
 
   etherifyCount = await etherifyContract.getTotalTracks();
 
-  const playlist = await etherifyContract.getPlaylist();
-  console.log(playlist);
-
   const tracksByRandom = await etherifyContract.getTracksByAddress(
     randomPerson.address
   );
-  console.log(tracksByRandom);
+
+  const finalContractBalance = await hre.ethers.provider.getBalance(
+    etherifyContract.address
+  );
+
+  console.log("");
+  console.log(
+    "Final contract balance:",
+    hre.ethers.utils.formatEther(finalContractBalance)
+  );
+  console.log("");
 
   const trackId = tracksByRandom[0].id;
 

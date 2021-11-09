@@ -122,18 +122,25 @@ export const addTrack = createAsyncThunk(
   "playlist/addTrack",
   async (spotifyLink: string, { dispatch, getState }) => {
     const spotifyUri = maybeGetSpotifyUri(spotifyLink);
+    const state = getState() as RootState;
 
     if (!spotifyUri) {
       throwError("Invalid spotify URI!");
+    } else if (
+      state.playlist.playlist?.find(
+        (track) => track.spotifyLink === spotifyLink
+      )
+    ) {
+      throwError("You can't submit duplicate tracks!");
     } else {
-      const etherifyContract = maybeGetEthereumContract(
-        getState() as RootState
-      );
+      const etherifyContract = maybeGetEthereumContract(state);
 
       const initCount = await etherifyContract.getTotalTracks();
       console.log("Total track count before adding: %d", initCount.toNumber());
 
-      const trackAddTxn = await etherifyContract.addTrack(spotifyUri);
+      const trackAddTxn = await etherifyContract.addTrack(spotifyUri, {
+        gasLimit: 300000,
+      });
 
       console.log("Now adding track...", trackAddTxn.hash);
       await trackAddTxn.wait();

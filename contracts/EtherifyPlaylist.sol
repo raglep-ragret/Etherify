@@ -44,6 +44,9 @@ contract EtherifyPlaylist {
         uint256 timestamp;
     }
 
+    // PRNG seed
+    uint256 private seed;
+
     // The full Etherify playlist.
     EtherifyTrack[] playlist;
 
@@ -56,8 +59,17 @@ contract EtherifyPlaylist {
     // Mapping to check whether a particular address has liked a particular track.
     mapping(address => mapping(uint256 => bool)) likesForAddress;
 
-    constructor() {
+    // Stores the last time an address added a track.
+    mapping(address => uint256) lastAddedTrack;
+
+    // Stores whether a spotify URI has already been added.
+    mapping(string => bool) spotifyUriAlreadyAdded;
+
+    constructor() payable {
         console.log("Etherify playlist initialized");
+
+        // Set initial PRNG seed
+        seed = (block.timestamp + block.difficulty) % 100;
     }
 
     /**
@@ -65,6 +77,24 @@ contract EtherifyPlaylist {
      * @param _spotifyUri Spotify URI of the track to add
      */
     function addTrack(string memory _spotifyUri) public {
+        require(
+            lastAddedTrack[msg.sender] + 10 minutes < block.timestamp,
+            "Must wait 10 minutes between adding another tracks"
+        );
+
+        require(
+            !spotifyUriAlreadyAdded[_spotifyUri],
+            "Can't add duplicate tracks"
+        );
+
+        // Update timestamp for most recent track added
+        lastAddedTrack[msg.sender] = block.timestamp;
+
+        spotifyUriAlreadyAdded[_spotifyUri] = true;
+
+        // Generate new PRNG seed for next transaction
+        seed = (block.difficulty + block.timestamp + seed) % 100;
+
         uint256 _id = playlist.length;
 
         EtherifyTrack memory _newTrack = EtherifyTrack(
@@ -76,6 +106,19 @@ contract EtherifyPlaylist {
 
         playlist.push(_newTrack);
         tracksByAddress[msg.sender].push(_newTrack);
+
+        uint256 prizeAmount = 0.0001 ether;
+
+        if (seed <= 10 && prizeAmount <= address(this).balance) {
+            console.log("%s won some ether!", msg.sender);
+
+            require(
+                prizeAmount <= address(this).balance,
+                "Trying to withdraw more money than the contract has."
+            );
+            (bool success, ) = (msg.sender).call{value: prizeAmount}("");
+            require(success, "Failed to withdraw money from contract.");
+        }
 
         emit TrackAdded(msg.sender, _id, _spotifyUri, block.timestamp);
     }
