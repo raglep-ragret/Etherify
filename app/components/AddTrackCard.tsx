@@ -4,13 +4,13 @@ import { addTrack, selectIsAddingTrack } from "../redux/slices/playlistSlice";
 import Button from "./Button";
 
 const AddTrackCard = () => {
-  const [spotifyLink, setSpotifyLink] = useState("");
+  const [track, setTrack] = useState("");
 
   const dispatch = useAppDispatch();
 
   const isAddingTrack = useAppSelector(selectIsAddingTrack);
 
-  const addSpotifyTrack = () => dispatch(addTrack(spotifyLink));
+  const addSpotifyTrack = () => dispatch(addTrack(track));
 
   return (
     <div className="bg-white dark:bg-black shadow-lg sm:rounded-lg text-left mt-8 mb-6">
@@ -32,10 +32,10 @@ const AddTrackCard = () => {
               className="lg:w-96 sm:w-72 w-full shadow-sm focus:ring-green-500 focus:border-green-500 dark:bg-gray-900 block sm:text-sm border-gray-300 rounded-md"
               id="email"
               name="email"
-              onChange={(event) => setSpotifyLink(event.target.value)}
+              onChange={(event) => setTrack(event.target.value)}
               placeholder="https://open.spotify.com/track/4CfkxZ4w0qCNuSA0hMJPeH?si=75cb60393f9a4dfc"
               type="email"
-              value={spotifyLink}
+              value={track}
             />
           </div>
           <Button

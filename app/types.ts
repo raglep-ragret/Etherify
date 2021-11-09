@@ -7,6 +7,6 @@ declare global {
 export type TTrack = {
   address: string;
   id: number;
-  spotifyLink: string;
+  spotifyUri: string;
   timestamp: number;
 };

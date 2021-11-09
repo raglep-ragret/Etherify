@@ -45,7 +45,7 @@ const PlaylistTrack = ({ track }: { track: TTrack }) => {
           width: 360,
           height: 80,
         }}
-        uri={maybeGetSpotifyUri(track.spotifyLink)}
+        uri={maybeGetSpotifyUri(track.spotifyUri)}
       />
 
       <span

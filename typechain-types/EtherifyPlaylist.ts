@@ -27,7 +27,7 @@ import type {
 export type EtherifyTrackStruct = {
   addr: string;
   id: BigNumberish;
-  spotifyLink: string;
+  spotifyUri: string;
   timestamp: BigNumberish;
 };
 
@@ -36,7 +36,7 @@ export type EtherifyTrackStructOutput = [
   BigNumber,
   string,
   BigNumber
-] & { addr: string; id: BigNumber; spotifyLink: string; timestamp: BigNumber };
+] & { addr: string; id: BigNumber; spotifyUri: string; timestamp: BigNumber };
 
 export interface EtherifyPlaylistInterface extends ethers.utils.Interface {
   functions: {

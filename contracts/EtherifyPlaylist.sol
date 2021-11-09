@@ -38,8 +38,8 @@ contract EtherifyPlaylist {
         address addr;
         // Unique identifier for this track.
         uint256 id;
-        // Spotify link, stored as a simple `string`.
-        string spotifyLink;
+        // Spotify URI, stored as a simple `string`.
+        string spotifyUri;
         // Time at which this track was added.
         uint256 timestamp;
     }

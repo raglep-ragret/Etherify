@@ -1,10 +1,9 @@
-import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import type { RootState } from "../store";
 import abi from "../../../artifacts/contracts/EtherifyPlaylist.sol/EtherifyPlaylist.json";
 import { throwError } from "../../utils/utils";
-import { BigNumber } from "@ethersproject/bignumber";
 
-const CONTRACT_ADDRESS = "0x6FCC7B10bbA2c5E5Ace79d0eFc390dD4900D5d4B";
+const CONTRACT_ADDRESS = "0x3E3bDD7C54967675630e2Ce3c06C3fd09D7Ad022";
 const CONTRACT_ABI = abi.abi;
 
 export const isWalletConnected = createAsyncThunk(
@@ -16,6 +15,8 @@ export const isWalletConnected = createAsyncThunk(
       return throwError("Make sure you have Metamask!");
     } else {
       console.log("Ethereum object loaded: ", ethereum);
+
+      // We want to refresh if the chain switches, so we can start from scratch.
       ethereum.on("chainChanged", (_chainId: string) =>
         window.location.reload()
       );
@@ -70,7 +71,6 @@ export const connectWallet = createAsyncThunk(
   }
 );
 
-// declaring the types for our state
 export type Web3State = {
   isCurrentlyConnectingToEthereum: boolean;
   isOnRinkeby: boolean;

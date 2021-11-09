@@ -11,6 +11,7 @@ import {
   selectIsOnRinkeby,
 } from "../redux/slices/web3Slice";
 import EmptyState from "../components/EmptyState";
+import NotificationCenter from "../components/NotificationCenter";
 
 function MyApp({ Component, pageProps }: AppProps) {
   return (
@@ -21,6 +22,7 @@ function MyApp({ Component, pageProps }: AppProps) {
           <ChainIdChecker>
             <Component {...pageProps} />
           </ChainIdChecker>
+          <NotificationCenter />
         </div>
       </Provider>
     </ThemeProvider>
