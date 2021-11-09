@@ -124,6 +124,10 @@ export const selectAuthorizedWallet = (state: RootState) =>
 export const selectContractAddress = (state: RootState) =>
   state.web3.etherifyContractAddress;
 
+// Return `true` if we're in the process of connecting.
+export const selectIsCurrentlyConnectingToEthereum = (state: RootState) =>
+  state.web3.isCurrentlyConnectingToEthereum;
+
 // Get the Etherify contract ABI.
 export const selectContractAbi = (state: RootState) =>
   state.web3.etherifyContractAbi;
