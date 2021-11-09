@@ -1,5 +1,5 @@
 <p align="center">
-  <a href="https://etherify.vercel.app/" target="blank"><img src="etherifyLogo.png" width="360" alt="Etherify Logo" /></a>
+  <a href="https://etherify.vercel.app/" target="blank"><img src="../etherifyLogo.png" width="360" alt="Etherify Logo" /></a>
 </p>
 
 # Etherify Frontend
