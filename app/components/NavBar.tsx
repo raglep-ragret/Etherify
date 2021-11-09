@@ -68,10 +68,9 @@ const NavBar = () => {
                 <div className="hidden md:ml-6 md:flex md:items-center md:space-x-4">
                   {navigation.map((item) =>
                     item.local ? (
-                      <Link href={item.href}>
+                      <Link href={item.href} key={item.name}>
                         <a
                           aria-current={item.current ? "page" : undefined}
-                          key={item.name}
                           className={classNames(
                             item.current
                               ? "border-green-500 text-gray-100"

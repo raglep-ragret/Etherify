@@ -25,13 +25,15 @@ const maybeGetEthereumContract = (state: RootState) => {
 
 export const getPlaylist = createAsyncThunk(
   "playlist/getPlaylist",
-  async (_, { dispatch, getState }) => {
+  async (_, { getState }) => {
+    console.log("Retrieving playlist");
+
     const etherifyContract = maybeGetEthereumContract(getState() as RootState);
 
     // Call the smart contract to retrieve the playlist.
     const playlistRaw = await etherifyContract.getPlaylist();
 
-    // We only need address, id, and spotify link in our UI.
+    // We only need address, id, spotify link, and timestamp in our UI.
     let playlistCleaned: TTrack[] = [];
     playlistRaw.forEach((track) => {
       playlistCleaned.push({
@@ -139,7 +141,7 @@ export const addTrack = createAsyncThunk(
       console.log("Total track count before adding: %d", initCount.toNumber());
 
       const trackAddTxn = await etherifyContract.addTrack(spotifyUri, {
-        gasLimit: 300000,
+        gasLimit: 400000,
       });
 
       console.log("Now adding track...", trackAddTxn.hash);

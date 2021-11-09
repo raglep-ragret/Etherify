@@ -42,8 +42,6 @@ const Playlist = ({ filterAddress }: { filterAddress?: string }) => {
 
   return (
     <>
-      {!filterAddress && <h2 className="mb-4 text-2xl font-bold">Playlist</h2>}
-
       {filterAddress && playlistToDisplay && playlistToDisplay.length === 0 && (
         <EmptyState
           message={
@@ -56,15 +54,28 @@ const Playlist = ({ filterAddress }: { filterAddress?: string }) => {
         />
       )}
 
+      {playlistToDisplay && playlistToDisplay.length === 0 && (
+        <EmptyState
+          message="The playlist is empty! Why not submit a track to start the party?"
+          truncateTopMargin
+        />
+      )}
+
       {playlistToDisplay && playlistToDisplay.length > 0 && (
-        <ol>
-          {playlistToDisplay
-            .slice()
-            .reverse()
-            .map((track) => (
-              <PlaylistTrack key={track.id} track={track} />
-            ))}
-        </ol>
+        <>
+          {!filterAddress && (
+            <h2 className="mb-4 text-2xl font-bold">Playlist</h2>
+          )}
+
+          <ol>
+            {playlistToDisplay
+              .slice()
+              .reverse()
+              .map((track) => (
+                <PlaylistTrack key={track.id} track={track} />
+              ))}
+          </ol>
+        </>
       )}
     </>
   );

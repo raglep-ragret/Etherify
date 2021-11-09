@@ -29,13 +29,6 @@ const PlaylistTrack = ({ track }: { track: TTrack }) => {
   const likeThisTrack = () => dispatch(likeTrack(track.id));
   const unlikeThisTrack = () => dispatch(unlikeTrack(track.id));
 
-  console.log(
-    "Track from address %s and I'm %s",
-    track.address,
-    maybeAuthorizedWallet
-  );
-  console.log(track.address === maybeAuthorizedWallet);
-
   return (
     /* TODO: Make this responsive */
     <li className="flex flex-row justify-between items-center gap-6 mb-3">

@@ -2,6 +2,7 @@ import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import type { RootState } from "../store";
 import abi from "../../../artifacts/contracts/EtherifyPlaylist.sol/EtherifyPlaylist.json";
 import { throwError } from "../../utils/utils";
+import { BigNumber } from "@ethersproject/bignumber";
 
 const CONTRACT_ADDRESS = "0x6FCC7B10bbA2c5E5Ace79d0eFc390dD4900D5d4B";
 const CONTRACT_ABI = abi.abi;
@@ -15,6 +16,9 @@ export const isWalletConnected = createAsyncThunk(
       return throwError("Make sure you have Metamask!");
     } else {
       console.log("Ethereum object loaded: ", ethereum);
+      ethereum.on("chainChanged", (_chainId: string) =>
+        window.location.reload()
+      );
     }
 
     const accounts = (await ethereum.request({
@@ -25,7 +29,11 @@ export const isWalletConnected = createAsyncThunk(
       const account = accounts[0];
       console.log("Has authorized account: ", account);
 
-      return account;
+      const chainId = (await ethereum.request({
+        method: "eth_chainId",
+      })) as BigInteger;
+
+      return { account, isOnRinkeby: chainId.toString() === "0x4" };
     } else {
       return throwError("No authorized account found");
     }
@@ -51,7 +59,11 @@ export const connectWallet = createAsyncThunk(
       const account = accounts[0];
       console.log("Connected to account: ", account);
 
-      return account;
+      const chainId = (await ethereum.request({
+        method: "eth_chainId",
+      })) as BigInteger;
+
+      return { account, isOnRinkeby: chainId.toString() === "0x4" };
     } else {
       return throwError("No authorized account found");
     }
@@ -61,6 +73,7 @@ export const connectWallet = createAsyncThunk(
 // declaring the types for our state
 export type Web3State = {
   isCurrentlyConnectingToEthereum: boolean;
+  isOnRinkeby: boolean;
   etherifyContractAbi: typeof CONTRACT_ABI;
   etherifyContractAddress: string;
   maybeAuthorizedWallet: string | undefined;
@@ -68,6 +81,7 @@ export type Web3State = {
 
 const initialState: Web3State = {
   isCurrentlyConnectingToEthereum: false,
+  isOnRinkeby: false,
   etherifyContractAbi: CONTRACT_ABI,
   etherifyContractAddress: CONTRACT_ADDRESS,
   maybeAuthorizedWallet: undefined,
@@ -76,12 +90,7 @@ const initialState: Web3State = {
 export const web3Slice = createSlice({
   name: "web3",
   initialState,
-  reducers: {
-    // Deauthorize a wallet
-    deauthorizeWallet: (state) => {
-      state.maybeAuthorizedWallet = undefined;
-    },
-  },
+  reducers: {},
   extraReducers: (builder) => {
     builder
       .addCase(connectWallet.pending, (state, _action) => {
@@ -93,7 +102,8 @@ export const web3Slice = createSlice({
       })
       .addCase(connectWallet.fulfilled, (state, action) => {
         state.isCurrentlyConnectingToEthereum = false;
-        state.maybeAuthorizedWallet = action.payload;
+        state.maybeAuthorizedWallet = action.payload.account;
+        state.isOnRinkeby = action.payload.isOnRinkeby;
       })
       .addCase(isWalletConnected.pending, (state, _action) => {
         state.isCurrentlyConnectingToEthereum = true;
@@ -104,13 +114,11 @@ export const web3Slice = createSlice({
       })
       .addCase(isWalletConnected.fulfilled, (state, action) => {
         state.isCurrentlyConnectingToEthereum = false;
-        state.maybeAuthorizedWallet = action.payload;
+        state.maybeAuthorizedWallet = action.payload.account;
+        state.isOnRinkeby = action.payload.isOnRinkeby;
       });
   },
 });
-
-// Actions
-export const { deauthorizeWallet } = web3Slice.actions;
 
 // Return `true` if there's a connected wallet.
 export const selectIsAuthorized = (state: RootState) =>
@@ -127,6 +135,9 @@ export const selectContractAddress = (state: RootState) =>
 // Return `true` if we're in the process of connecting.
 export const selectIsCurrentlyConnectingToEthereum = (state: RootState) =>
   state.web3.isCurrentlyConnectingToEthereum;
+
+// Return `true` if we're in the process of connecting.
+export const selectIsOnRinkeby = (state: RootState) => state.web3.isOnRinkeby;
 
 // Get the Etherify contract ABI.
 export const selectContractAbi = (state: RootState) =>
