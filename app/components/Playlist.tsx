@@ -6,11 +6,13 @@ import {
   getPlaylist,
   selectPlaylist,
 } from "../redux/slices/playlistSlice";
+import { selectAuthorizedWallet } from "../redux/slices/web3Slice";
 import PlaylistTrack from "./PlaylistTrack";
 
 const Playlist = () => {
   const dispatch = useAppDispatch();
 
+  const maybeAuthorizedWallet = useAppSelector(selectAuthorizedWallet);
   const playlist = useAppSelector(selectPlaylist);
 
   const loadPlaylist = () => dispatch(getPlaylist());
@@ -24,9 +26,12 @@ const Playlist = () => {
   useEffect(() => {
     if (playlist) {
       loadLikes();
-      loadMyLikes();
+
+      if (maybeAuthorizedWallet) {
+        loadMyLikes();
+      }
     }
-  }, [playlist]);
+  }, [maybeAuthorizedWallet, playlist]);
 
   return (
     <>

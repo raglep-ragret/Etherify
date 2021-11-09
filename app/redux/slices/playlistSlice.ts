@@ -56,7 +56,6 @@ export const getAllLikes = createAsyncThunk(
     const etherifyContract = maybeGetEthereumContract(state);
 
     const playlist = state.playlist.playlist;
-    console.log("PLAYLIST", playlist);
 
     if (!playlist) {
       throwError("Can't get likes before we get the playlist!");
@@ -65,7 +64,7 @@ export const getAllLikes = createAsyncThunk(
     const playlistLikes = playlist!.map((track) =>
       etherifyContract.getLikesForTrack(track.id)
     );
-    console.log(playlistLikes);
+    console.log("Playlist likes: ", playlistLikes);
 
     const likesForTracks = await Promise.all(playlistLikes);
     const likes: { [id: number]: number } = {};
@@ -201,7 +200,7 @@ const initialState: PlaylistState = {
   isPlaylistLoaded: false,
   likes: {},
   myLikes: {},
-  playlist: [],
+  playlist: undefined,
   trackInProcessOfLikeUnlike: {},
 };
 
