@@ -1,7 +1,6 @@
 import { ethers } from "ethers";
 import Head from "next/head";
 import { useRouter } from "next/router";
-import DefaultErrorPage from "next/error";
 import React, { useEffect } from "react";
 import EmptyState from "../../components/EmptyState";
 import Playlist from "../../components/Playlist";
@@ -11,6 +10,7 @@ import {
   selectAuthorizedWallet,
 } from "../../redux/slices/web3Slice";
 import { truncateEthereumAddress } from "../../utils/ethereum";
+import Custom404 from "../404";
 
 export default function Address() {
   const router = useRouter();
@@ -76,6 +76,6 @@ export default function Address() {
       </main>
     </>
   ) : (
-    <DefaultErrorPage statusCode={404} />
+    <Custom404 />
   );
 }
