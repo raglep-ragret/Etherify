@@ -1,15 +1,11 @@
-import { MoonIcon, SunIcon } from "@heroicons/react/solid";
-import { useTheme } from "next-themes";
+import { MusicNoteIcon } from "@heroicons/react/solid";
 import Head from "next/head";
 import React, { useEffect, useState } from "react";
 import AddTrackCard from "../components/AddTrackCard";
-import Button from "../components/Button";
-import DarkModeSwitch from "../components/DarkModeSwitch";
 import NavBar from "../components/NavBar";
 import Playlist from "../components/Playlist";
 import { useAppDispatch, useAppSelector } from "../redux/hooks";
 import {
-  connectWallet,
   isWalletConnected,
   selectAuthorizedWallet,
 } from "../redux/slices/web3Slice";
@@ -49,9 +45,21 @@ export default function Home() {
           blockchain.
         </p>
 
-        <AddTrackCard />
+        {!maybeAuthorizedWallet && (
+          <>
+            <AddTrackCard /> <Playlist />
+          </>
+        )}
 
-        {maybeAuthorizedWallet && <Playlist />}
+        {maybeAuthorizedWallet && (
+          <div className="relative block max-w-2xl w-full border-2 border-gray-500 border-dashed rounded-lg p-12 text-center hover:border-gray-400 mt-24">
+            <MusicNoteIcon className="mx-auto h-12 w-12" />
+            <span className="mt-2 block text-sm font-medium">
+              Connect a wallet via the Rinkeby testnet to view the playlist and
+              add tracks!
+            </span>
+          </div>
+        )}
       </main>
     </div>
   );
