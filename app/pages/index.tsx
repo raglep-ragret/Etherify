@@ -26,7 +26,7 @@ export default function Home() {
   }, []);
 
   return (
-    <div className="bg-white dark:bg-gray-900 flex flex-col items-center min-h-screen">
+    <div className="bg-white dark:bg-gray-900 flex flex-col items-center justify-center min-h-screen">
       <Head>
         <title>Etherify</title>
         <meta
@@ -38,7 +38,7 @@ export default function Home() {
 
       <NavBar />
 
-      <main className="text-black dark:text-gray-50 flex flex-col items-center w-full flex-1 lg:px-20 px-8 text-center mt-16">
+      <main className="text-black dark:text-gray-50 flex flex-col items-center justify-center w-full flex-1 lg:px-20 px-8 text-center mt-6">
         <h1 className="text-6xl font-medium">
           Welcome to{" "}
           <span className="text-green-400 font-extrabold">etherify</span>!
@@ -51,7 +51,7 @@ export default function Home() {
 
         <AddTrackCard />
 
-        <Playlist />
+        {maybeAuthorizedWallet && <Playlist />}
       </main>
     </div>
   );

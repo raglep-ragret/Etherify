@@ -20,16 +20,15 @@ const Playlist = () => {
   const loadMyLikes = () => dispatch(getMyLikes());
 
   useEffect(() => {
-    loadPlaylist();
-  }, []);
+    if (maybeAuthorizedWallet) {
+      loadPlaylist();
+    }
+  }, [maybeAuthorizedWallet]);
 
   useEffect(() => {
-    if (playlist) {
+    if (maybeAuthorizedWallet && playlist) {
       loadLikes();
-
-      if (maybeAuthorizedWallet) {
-        loadMyLikes();
-      }
+      loadMyLikes();
     }
   }, [maybeAuthorizedWallet, playlist]);
 
