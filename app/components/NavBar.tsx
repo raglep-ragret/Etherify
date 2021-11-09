@@ -14,6 +14,8 @@ import {
   selectIsCurrentlyConnectingToEthereum,
 } from "../redux/slices/web3Slice";
 import { truncateEthereumAddress } from "../utils/ethereum";
+import React from "react";
+import Link from "next/link";
 
 const navigation = [
   { name: "Home", href: "/", current: true, local: true },
@@ -55,29 +57,48 @@ const NavBar = () => {
                     )}
                   </Disclosure.Button>
                 </div>
-                <div className="flex-shrink-0 flex items-center">
-                  <PlayIcon className="block h-8 w-auto text-green-400 align-middle mr-1" />
-                  <span className="hidden text-white lg:block w-auto font-extrabold text-2xl align-middle cursor-default leading-none pb-1">
-                    etherify
-                  </span>
-                </div>
+                <Link href="/">
+                  <a className="flex-shrink-0 flex items-center">
+                    <PlayIcon className="block h-8 w-auto text-green-400 align-middle mr-1" />
+                    <span className="hidden text-white lg:block w-auto font-extrabold text-2xl align-middle leading-none pb-1">
+                      etherify
+                    </span>
+                  </a>
+                </Link>
                 <div className="hidden md:ml-6 md:flex md:items-center md:space-x-4">
-                  {navigation.map((item) => (
-                    <a
-                      aria-current={item.current ? "page" : undefined}
-                      key={item.name}
-                      href={item.href}
-                      className={classNames(
-                        item.current
-                          ? "border-green-500 text-gray-100"
-                          : "border-transparent text-gray-700 hover:border-gray-600 hover:text-gray-500",
-                        "px-3 py-2 text-sm font-medium border-b-2 h-full flex flex-row items-center"
-                      )}
-                      target={!item.local ? "_blank" : undefined}
-                    >
-                      <span>{item.name}</span>
-                    </a>
-                  ))}
+                  {navigation.map((item) =>
+                    item.local ? (
+                      <Link href={item.href}>
+                        <a
+                          aria-current={item.current ? "page" : undefined}
+                          key={item.name}
+                          className={classNames(
+                            item.current
+                              ? "border-green-500 text-gray-100"
+                              : "border-transparent text-gray-700 hover:border-gray-600 hover:text-gray-500",
+                            "px-3 py-2 text-sm font-medium border-b-2 h-full flex flex-row items-center"
+                          )}
+                        >
+                          <span>{item.name}</span>
+                        </a>
+                      </Link>
+                    ) : (
+                      <a
+                        aria-current={item.current ? "page" : undefined}
+                        key={item.name}
+                        href={item.href}
+                        className={classNames(
+                          item.current
+                            ? "border-green-500 text-gray-100"
+                            : "border-transparent text-gray-700 hover:border-gray-600 hover:text-gray-500",
+                          "px-3 py-2 text-sm font-medium border-b-2 h-full flex flex-row items-center"
+                        )}
+                        target={"_blank"}
+                      >
+                        <span>{item.name}</span>
+                      </a>
+                    )
+                  )}
                 </div>
               </div>
               <div className="flex items-center">

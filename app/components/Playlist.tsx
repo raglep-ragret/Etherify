@@ -7,13 +7,21 @@ import {
   selectPlaylist,
 } from "../redux/slices/playlistSlice";
 import { selectAuthorizedWallet } from "../redux/slices/web3Slice";
+import { truncateEthereumAddress } from "../utils/ethereum";
+import EmptyState from "./EmptyState";
 import PlaylistTrack from "./PlaylistTrack";
 
-const Playlist = () => {
+const Playlist = ({ filterAddress }: { filterAddress?: string }) => {
   const dispatch = useAppDispatch();
 
   const maybeAuthorizedWallet = useAppSelector(selectAuthorizedWallet);
-  const playlist = useAppSelector(selectPlaylist);
+  const rawPlaylist = useAppSelector(selectPlaylist);
+  const playlistToDisplay = filterAddress
+    ? rawPlaylist?.filter((track) => track.address === filterAddress)
+    : rawPlaylist;
+
+  const areYouFilteredAddress =
+    filterAddress?.toLowerCase() === maybeAuthorizedWallet?.toLowerCase();
 
   const loadPlaylist = () => dispatch(getPlaylist());
   const loadLikes = () => dispatch(getAllLikes());
@@ -26,19 +34,31 @@ const Playlist = () => {
   }, [maybeAuthorizedWallet]);
 
   useEffect(() => {
-    if (maybeAuthorizedWallet && playlist) {
+    if (maybeAuthorizedWallet && playlistToDisplay) {
       loadLikes();
       loadMyLikes();
     }
-  }, [maybeAuthorizedWallet, playlist]);
+  }, [maybeAuthorizedWallet, playlistToDisplay]);
 
   return (
     <>
-      <h2 className="mt-6 mb-4 text-2xl font-bold">Playlist</h2>
+      {!filterAddress && <h2 className="mb-4 text-2xl font-bold">Playlist</h2>}
 
-      {playlist && playlist.length > 0 && (
+      {filterAddress && playlistToDisplay && playlistToDisplay.length === 0 && (
+        <EmptyState
+          message={
+            areYouFilteredAddress
+              ? "You haven't submitted any tracks yet!"
+              : `Address ${truncateEthereumAddress(
+                  filterAddress
+                )} hasn't submitted any tracks yet!`
+          }
+        />
+      )}
+
+      {playlistToDisplay && playlistToDisplay.length > 0 && (
         <ol>
-          {playlist
+          {playlistToDisplay
             .slice()
             .reverse()
             .map((track) => (
