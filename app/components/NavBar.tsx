@@ -16,26 +16,29 @@ import {
 import { truncateEthereumAddress } from "../utils/ethereum";
 import React from "react";
 import Link from "next/link";
+import { useRouter } from "next/router";
 
-const navigation = [
-  { name: "Home", href: "/", current: true, local: true },
-  {
-    name: "GitHub",
-    href: "https://github.com/raglep-ragret/Etherify",
-    current: false,
-    local: false,
-  },
-];
+const navigation = [{ name: "Home", href: "/", current: true, local: true }];
 
 function classNames(...classes: string[]) {
   return classes.filter(Boolean).join(" ");
 }
 
 const NavBar = () => {
+  const { pathname, query } = useRouter();
+
+  const areWeHome = pathname === "/";
+  const areWeAddress = pathname === "/address/[address]";
+  const maybeAddress = areWeAddress ? (query.address as string) : undefined;
+
   const dispatch = useAppDispatch();
 
   const isAuthorizing = useAppSelector(selectIsCurrentlyConnectingToEthereum);
   const maybeAuthorizedWallet = useAppSelector(selectAuthorizedWallet);
+
+  const areYouThisAddress =
+    maybeAddress &&
+    maybeAddress.toLowerCase() === maybeAuthorizedWallet?.toLowerCase();
 
   const doConnectWallet = () => dispatch(connectWallet());
 
@@ -66,37 +69,52 @@ const NavBar = () => {
                   </a>
                 </Link>
                 <div className="hidden md:ml-6 md:flex md:items-center md:space-x-4">
-                  {navigation.map((item) =>
-                    item.local ? (
-                      <Link href={item.href} key={item.name}>
-                        <a
-                          aria-current={item.current ? "page" : undefined}
-                          className={classNames(
-                            item.current
-                              ? "border-green-500 text-gray-100"
-                              : "border-transparent text-gray-700 hover:border-gray-600 hover:text-gray-500",
-                            "px-3 py-2 text-sm font-medium border-b-2 h-full flex flex-row items-center"
-                          )}
-                        >
-                          <span>{item.name}</span>
-                        </a>
-                      </Link>
-                    ) : (
+                  <Link href={"/"}>
+                    <a
+                      aria-current={areWeHome ? "page" : undefined}
+                      className={classNames(
+                        areWeHome
+                          ? "border-green-500 text-gray-100"
+                          : "border-transparent text-gray-700 hover:border-gray-600 hover:text-gray-500",
+                        "px-3 py-2 text-sm font-medium border-b-2 h-full flex flex-row items-center"
+                      )}
+                    >
+                      <span>Home</span>
+                    </a>
+                  </Link>
+                  {maybeAuthorizedWallet && (
+                    <Link href={`/address/${maybeAuthorizedWallet}`}>
                       <a
-                        aria-current={item.current ? "page" : undefined}
-                        key={item.name}
-                        href={item.href}
+                        aria-current={areYouThisAddress ? "page" : undefined}
                         className={classNames(
-                          item.current
+                          areYouThisAddress
                             ? "border-green-500 text-gray-100"
                             : "border-transparent text-gray-700 hover:border-gray-600 hover:text-gray-500",
                           "px-3 py-2 text-sm font-medium border-b-2 h-full flex flex-row items-center"
                         )}
-                        target={"_blank"}
                       >
-                        <span>{item.name}</span>
+                        <span>Your Tracks</span>
                       </a>
-                    )
+                    </Link>
+                  )}
+                  {maybeAddress && !areYouThisAddress && (
+                    <Link href={`/address/${maybeAddress}`}>
+                      <a
+                        aria-current={
+                          areWeAddress && !areYouThisAddress
+                            ? "page"
+                            : undefined
+                        }
+                        className={classNames(
+                          areWeAddress && !areYouThisAddress
+                            ? "border-green-500 text-gray-100"
+                            : "border-transparent text-gray-700 hover:border-gray-600 hover:text-gray-500",
+                          "px-3 py-2 text-sm font-medium border-b-2 h-full flex flex-row items-center"
+                        )}
+                      >
+                        <span>{truncateEthereumAddress(maybeAddress)}</span>
+                      </a>
+                    </Link>
                   )}
                 </div>
               </div>

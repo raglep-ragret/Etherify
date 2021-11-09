@@ -17,7 +17,9 @@ const Playlist = ({ filterAddress }: { filterAddress?: string }) => {
   const maybeAuthorizedWallet = useAppSelector(selectAuthorizedWallet);
   const rawPlaylist = useAppSelector(selectPlaylist);
   const playlistToDisplay = filterAddress
-    ? rawPlaylist?.filter((track) => track.address === filterAddress)
+    ? rawPlaylist?.filter(
+        (track) => track.address.toLowerCase() === filterAddress.toLowerCase()
+      )
     : rawPlaylist;
 
   const areYouFilteredAddress =
@@ -54,12 +56,14 @@ const Playlist = ({ filterAddress }: { filterAddress?: string }) => {
         />
       )}
 
-      {playlistToDisplay && playlistToDisplay.length === 0 && (
-        <EmptyState
-          message="The playlist is empty! Why not submit a track to start the party?"
-          truncateTopMargin
-        />
-      )}
+      {!filterAddress &&
+        playlistToDisplay &&
+        playlistToDisplay.length === 0 && (
+          <EmptyState
+            message="The playlist is empty! Why not submit a track to start the party?"
+            truncateTopMargin
+          />
+        )}
 
       {playlistToDisplay && playlistToDisplay.length > 0 && (
         <>

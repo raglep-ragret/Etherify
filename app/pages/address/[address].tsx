@@ -1,19 +1,24 @@
+import { ethers } from "ethers";
 import Head from "next/head";
 import { useRouter } from "next/router";
+import DefaultErrorPage from "next/error";
 import React, { useEffect } from "react";
-import EmptyState from "../components/EmptyState";
-import Playlist from "../components/Playlist";
-import { useAppDispatch, useAppSelector } from "../redux/hooks";
+import EmptyState from "../../components/EmptyState";
+import Playlist from "../../components/Playlist";
+import { useAppDispatch, useAppSelector } from "../../redux/hooks";
 import {
   isWalletConnected,
   selectAuthorizedWallet,
-} from "../redux/slices/web3Slice";
-import { truncateEthereumAddress } from "../utils/ethereum";
+} from "../../redux/slices/web3Slice";
+import { truncateEthereumAddress } from "../../utils/ethereum";
 
 export default function Address() {
   const router = useRouter();
   const { address } = router.query;
-  const truncatedAddress = address
+
+  const isAddressValid = address && ethers.utils.isAddress(address as string);
+
+  const truncatedAddress = isAddressValid
     ? truncateEthereumAddress(address as string)
     : undefined;
 
@@ -24,16 +29,21 @@ export default function Address() {
   const checkIfConnected = () => dispatch(isWalletConnected());
 
   const areYouThisAddress =
+    address &&
     (address as string).toLowerCase() === maybeAuthorizedWallet?.toLowerCase();
 
   useEffect(() => {
     checkIfConnected();
   }, []);
 
-  return (
+  return isAddressValid ? (
     <>
       <Head>
-        <title>Tracks from </title>
+        <title>
+          {areYouThisAddress
+            ? "Your tracks"
+            : `Tracks from address ${truncatedAddress}`}
+        </title>
         <meta
           name="description"
           content="A distributed Spotify playlist on the Ethereum blockchain."
@@ -65,5 +75,7 @@ export default function Address() {
         )}
       </main>
     </>
+  ) : (
+    <DefaultErrorPage statusCode={404} />
   );
 }

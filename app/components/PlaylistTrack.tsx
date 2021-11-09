@@ -32,7 +32,7 @@ const PlaylistTrack = ({ track }: { track: TTrack }) => {
   return (
     /* TODO: Make this responsive */
     <li className="flex flex-row justify-between items-center gap-6 mb-3">
-      <Link href={`/${track.address}`}>
+      <Link href={`/address/${track.address}`}>
         <a className="font-mono hover:text-green-700 dark:hover:text-green-300 w-28">
           {track.address.toLowerCase() === maybeAuthorizedWallet?.toLowerCase()
             ? `${truncateEthereumAddress(track.address)} (You)`
