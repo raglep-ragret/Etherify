@@ -3,7 +3,7 @@ import type { RootState } from "../store";
 import abi from "../../../artifacts/contracts/EtherifyPlaylist.sol/EtherifyPlaylist.json";
 import { throwError } from "../../utils/utils";
 
-const CONTRACT_ADDRESS = "0x8371904a663174322cF68789dd9e15F2081074Bc";
+const CONTRACT_ADDRESS = "0x6FCC7B10bbA2c5E5Ace79d0eFc390dD4900D5d4B";
 const CONTRACT_ABI = abi.abi;
 
 export const isWalletConnected = createAsyncThunk(
