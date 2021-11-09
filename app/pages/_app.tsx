@@ -3,7 +3,8 @@ import { store } from "../redux/store";
 import "tailwindcss/tailwind.css";
 import { AppProps } from "next/dist/shared/lib/router/router";
 import { ThemeProvider } from "next-themes";
-import React, { Children } from "react";
+import React from "react";
+import { BsGithub } from "react-icons/bs";
 import NavBar from "../components/NavBar";
 import { useAppSelector } from "../redux/hooks";
 import {
@@ -23,6 +24,13 @@ function MyApp({ Component, pageProps }: AppProps) {
             <Component {...pageProps} />
           </ChainIdChecker>
           <NotificationCenter />
+          <a
+            className="fixed bottom-4 right-4"
+            href="https://github.com/raglep-ragret/Etherify"
+            target="_blank"
+          >
+            <BsGithub className="h-6 w-6" />
+          </a>
         </div>
       </Provider>
     </ThemeProvider>
